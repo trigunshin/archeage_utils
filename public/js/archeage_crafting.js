@@ -15,6 +15,7 @@ var Item = Backbone.Model.extend({
         ingredients: 'List',
         proficiency: 'Text',
         labor: 'Text',
+        local_id: 'Text'
     }
 });
 var Ingredient = Backbone.Model.extend({
@@ -53,7 +54,13 @@ var ItemView = Backbone.Marionette.ItemView.extend({
     },
     template: '#item-template',
     tagName: 'div',
-    // events: {}
+    events: {
+        'click .item__delete': 'remove_item'
+    },
+    remove_item: function(e) {
+        console.log(this.model.attributes.name);
+        displayed.remove(this.model);
+    }
 });
 var ItemsView = Backbone.Marionette.CollectionView.extend({
     template: "#item-list-template",
@@ -67,25 +74,28 @@ var ItemsLayout = Backbone.Marionette.Layout.extend({
     }
 });
 var SearchView = Backbone.Marionette.ItemView.extend({
-    initialize: function() {
+    initialize: function(opts) {
         //this.listento(this.model, 'destroy', this.remove);
+        self.items = opts.items;
     },
     template: '#search-template',
     tagName: 'div',
     events: {'submit': 'ensure_added'},
     ensure_added: function(e) {
         e.preventDefault();
-        console.log("want to add:"+$('#item_search_box').val());
+        var to_display = models_by_name[$('#item_search_box').val()];
+        if(to_display) {
+            self.items.add(to_display);
+        }
         return false;
     }
-
 });
 
 var items_fetch_success = function(items, resp, options) {
     var iCollectionView = new ItemsView({
         collection: items
     });
-    var search_view = new SearchView();
+    var search_view = new SearchView({items: items});
     MyApp.search_region.show(search_view);
     MyApp.items_region.show(iCollectionView);
 
@@ -111,7 +121,20 @@ var key_map = {
     'name': 'name',
     'ingredients': 'ingredients'
 };
+/*
+need:
+    typeahead name list
+    item display collection (items, displayed_items is unnecessary?)
+    item lookup dict {name:item}
+search layout needs access to displayed items, or use vent.add...
+item_view_template needs access to displayed items, or use vent.add
+    the delete should only pop from view collection, not remove the model itself
+//*/
 var typeahead_names = [];
+var models_by_name = {};
+//var displayed_items = [];
+var displayed = new Items();
+
 var fix_json = function(value) {
     // use key_map to fix value names, then collapse key/val array into dict
     return _.reduce(_.map(_.keys(value), function(key) {
@@ -135,10 +158,19 @@ $.getJSON("arch_recipes.json", function(json) {
 
     typeahead_names = _.pluck(vals, 'name');
 
-    var iList = new Items();
+    //var iList = new Items();
+    _.each(vals, function(val) {
+        models_by_name[val.name] = new Item(val);
+    });
+
     //for(var i=0,iLen=vals.length;i<iLen;i++) {
     for(var i=0,iLen=5;i<iLen;i++) {
-        iList.add(vals[i]);
+        displayed.push(models_by_name[vals[i].name]);
     }
-    items_fetch_success(iList);
+    /*
+    _.each(displayed, function(d_item) {
+        iList.add(d_item);
+    });
+    //*/
+    items_fetch_success(displayed);
 });
