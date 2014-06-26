@@ -1,12 +1,3 @@
-var ItemList = Backbone.Model.extend({
-    idAttributes: '_id',
-    urlRoot: '/api/item/',
-    schema: {
-        // name: 'Text'
-        //, ingredients: 'List'
-    }
-});
-
 var Item = Backbone.Model.extend({
     idAttributes: '_id',
     urlRoot: '/api/item/',
@@ -18,36 +9,10 @@ var Item = Backbone.Model.extend({
         local_id: 'Text'
     }
 });
-var Ingredient = Backbone.Model.extend({
-    schema: {
-        name: 'Text',
-        qty: 'Text'
-    }
-});
-var Ingredients = Backbone.Collection.extend({
-    model: Ingredient,
-    url: "/api/item/"
-});
-
 var Items = Backbone.Collection.extend({
     model: Item,
     url: "/api/item/"
 });
-
-var IngredientView = Backbone.Marionette.ItemView.extend({
-    initialize: function() {
-        //this.listento(this.model, 'destroy', this.remove);
-    },
-    template: '#ingredient-template',
-    tagName: 'li',
-    // events: {}
-});
-var IngredientssView = Backbone.Marionette.CollectionView.extend({
-    template: "#ingredients-template",
-    itemView: IngredientView,
-    initialize: function(){}
-});
-
 var ItemView = Backbone.Marionette.ItemView.extend({
     initialize: function() {
         //this.listento(this.model, 'destroy', this.remove);
@@ -121,18 +86,9 @@ var key_map = {
     'name': 'name',
     'ingredients': 'ingredients'
 };
-/*
-need:
-    typeahead name list
-    item display collection (items, displayed_items is unnecessary?)
-    item lookup dict {name:item}
-search layout needs access to displayed items, or use vent.add...
-item_view_template needs access to displayed items, or use vent.add
-    the delete should only pop from view collection, not remove the model itself
-//*/
+
 var typeahead_names = [];
 var models_by_name = {};
-//var displayed_items = [];
 var displayed = new Items();
 
 var fix_json = function(value) {
@@ -158,19 +114,13 @@ $.getJSON("arch_recipes.json", function(json) {
 
     typeahead_names = _.pluck(vals, 'name');
 
-    //var iList = new Items();
     _.each(vals, function(val) {
         models_by_name[val.name] = new Item(val);
     });
 
-    //for(var i=0,iLen=vals.length;i<iLen;i++) {
+    //TODO drive this by either persisted set from localstorage or search-only
     for(var i=0,iLen=5;i<iLen;i++) {
         displayed.push(models_by_name[vals[i].name]);
     }
-    /*
-    _.each(displayed, function(d_item) {
-        iList.add(d_item);
-    });
-    //*/
     items_fetch_success(displayed);
 });
