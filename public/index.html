@@ -11,9 +11,13 @@
 <script type="text/template" id="item-template">
     <div id="<%= local_id %>-ingredient-template" class='accordion'>
         <div class="accordion-heading row">
-            <a class="accordion-toggle span8" href="#ings-<%= local_id %>" data-toggle="collapse" data-parent="#<%= local_id %>-ingredient-template">
+            <a class="accordion-toggle span4" href="#ings-<%= local_id %>" data-toggle="collapse" data-parent="#<%= local_id %>-ingredient-template">
                 <%= name %>
             </a>
+            <form id='prices-<%= local_id %>' class="form-inline span4">
+                <input type="text" class="input-small" placeholder="calc" disabled='true'>
+                <input type="text" class="input-small" placeholder="custom">
+            </form>
 
             <span id="del-<%= local_id %>" class='offset1 btn btn-small btn-danger item__delete'>delete</span>
         </div>
@@ -22,6 +26,10 @@
                 <% _.each(ingredients, function(item){ %>
                     <div class='row'>
                         <div class='offset1 span4'> <%= item.name %> x<%= item.qty %></div>
+                        <form class="form-inline span3 ingredient-">
+                            <input type="text" class="input-small" placeholder="calc" disabled='true'>
+                            <input type="text" class="input-small" placeholder="custom">
+                        </form>
                         <div id="ingredient_add" class="btn btn-small btn-danger ingredient__add">Add Ingredient</div>
                     </div>
                 <% }); %>
